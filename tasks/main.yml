@@ -1,0 +1,51 @@
+---
+- name: install postgresql-server and psycopg
+  portage: package={{ item }}
+  with_items:
+    - dev-db/postgresql-server
+    - dev-python/psycopg
+  tags: packages
+
+- name: configure runscript
+  template: >
+    src=postgresql.j2
+    dest=/etc/conf.d/{{ postgresql_name }}
+  tags: config
+
+- name: check whether the data directory is empty
+  shell: >
+    [ ! "$(ls -A {{ postgresql_data_dir }})" ]
+  register: is_data_dir_empty
+  failed_when: false
+  changed_when: false
+
+- name: run package configuration phase
+  shell: >
+    yes | emerge --config dev-db/postgresql-server:{{ postgresql_slot }}
+  when: is_data_dir_empty | success
+  tags: config
+
+- name: create logging directory
+  file: >
+    path={{ postgresql_log_dir }}
+    state=directory
+    owner=postgres group=postgres mode=0750
+  when: postgresql_log_destination != 'syslog'
+
+- name: configure postgresql.conf and pg_hba.conf
+  template: >
+    src={{ item }}.j2
+    dest={{ postgresql_conf_dir }}/{{ item }}
+    owner=postgres group=postgres mode=0600
+  with_items:
+    - postgresql.conf
+    - pg_hba.conf
+  notify: reload postgresql
+  tags: config
+
+- name: enable and start postgresql
+  service: >
+    name={{ postgresql_name }}
+    enabled=yes
+    state=started
+  tags: services

@@ -1,0 +1,65 @@
+# {{ ansible_managed }}
+# PostgreSQL Client Authentication Configuration File
+# ===================================================
+#
+# Refer to the "Client Authentication" section in the PostgreSQL
+# documentation for a complete description of this file.  A short
+# synopsis follows.
+#
+# This file controls: which hosts are allowed to connect, how clients
+# are authenticated, which PostgreSQL user names they can use, which
+# databases they can access.  Records take one of these forms:
+#
+# local      DATABASE  USER  METHOD  [OPTIONS]
+# host       DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+# hostssl    DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+# hostnossl  DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+#
+
+# Put your actual configuration here
+# ----------------------------------
+#
+# If you want to allow non-local connections, you need to add more
+# "host" records.  In that case you will also need to make PostgreSQL
+# listen on a non-local interface via the listen_addresses
+# configuration parameter, or via the -i or -h command line switches.
+
+# CAUTION: Configuring the system for local "trust" authentication
+# allows any local user to connect as any PostgreSQL user, including
+# the database superuser.  If you do not trust all your local users,
+# use another authentication method.
+
+
+# TYPE	DATABASE		USER			ADDRESS				METHOD
+
+{% for auth in postgresql_authentication %}
+{% if auth.comment is defined -%}
+# {{ auth.comment }}
+{% endif %}
+{{auth.type}}	{% if auth.database is undefined %}
+samerole{% elif auth.database is string %}
+{{ auth.database }}{% elif auth.database is sequence %}
+{{ auth.database|join(',') }}{% endif %}	{{ auth.user }}	{{ auth.address|default('	') }}	{{ auth.method }}	{% if 'options' in auth %}
+{% for k,v in auth.options.items() %}
+{{ k }}={{ v }} {% endfor %}{% endif %}
+
+{% endfor %}
+
+
+# DO NOT DISABLE!
+# If you change this first entry you will need to make sure that the database
+# superuser can access the database using some other method. Noninteractive
+# access to all databases is required during automatic maintenance (custom
+# daily cronjobs, replication, and similar tasks).
+
+# TYPE	DATABASE		USER			ADDRESS				METHOD
+local 	all 			postgres							peer
+local	all				all									md5
+host	all				all				127.0.0.1/32		md5
+host	all				all				::1/128				md5
+
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+#local	replication		postgres							peer
+#host	replication		postgres		127.0.0.1/32		md5
+#host	replication		postgres		::1/128				md5

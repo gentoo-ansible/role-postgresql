@@ -1,0 +1,155 @@
+---
+#
+# Base configuration
+#
+
+postgresql_slot: 9.4
+
+postgresql_name: "postgresql-{{ postgresql_slot }}"
+
+postgresql_encoding: UTF-8
+
+postgresql_locale: en_US.UTF-8
+
+# Path of the data directory where database files are stored.
+postgresql_data_dir: "/var/lib/postgresql/{{ postgresql_slot }}/data"
+
+# Path of the directory for config files.
+postgresql_conf_dir: "/etc/postgresql-{{ postgresql_slot }}"
+
+# Directory where the log files are written.
+postgresql_log_dir: "/var/log/postgresql"
+
+postgresql_timezone: "{{ timezone }}"
+
+
+#
+# Connections and authentication
+#
+
+postgresql_listen_addresses:
+  - localhost
+
+postgresql_port: 5432
+
+postgresql_max_connections: 100
+
+postgresql_unix_socket_group: ''
+
+postgresql_unix_socket_permissions: '0777'
+
+# Authenticated connections that will be inserted in pg_hba.conf.
+# These won't overwrite the default local idents, which are left untouched as
+# they are useful and safe.
+#
+# Specify connections as a list of hashes having this schema:
+# - comment:   Comment for this entry.
+#   type:      local | host | hostssl | hostnossl
+#   user:      Name of the DB user.
+#   method:    trust | reject | md5 | ident | peer | ldap | cert | pam | ...
+#   database:  DB name, list of DB names, sameuser, samerole, or replication;
+#              defaults to 'samerole'.
+#   address:   IP address, samehost, or samenet (optional)
+#   options:   Hash of additional options. (optional)
+#     key: value
+postgresql_authentication: []
+
+
+#
+# Resource usage
+#
+
+# min 128kB
+postgresql_shared_buffers: 256MB
+
+# min 800kB
+postgresql_temp_buffers: 8MB
+
+# min 64kB
+postgresql_work_mem: 16MB
+
+# min 1MB
+postgresql_maintenance_work_mem: 32MB
+
+# min 100kB
+postgresql_max_stack_depth: 4MB
+
+
+#
+# Error reporting and logging
+#
+
+# Valid values are combinations of stderr, csvlog, syslog, and eventlog,
+# depending on platform. Value 'csvlog' requires logging_collector to be on.
+postgresql_log_destination: stderr
+
+# Enable capturing of stderr and csvlog into log files.
+# Required to be on for csvlogs.
+postgresql_logging_collector: 'off'
+
+
+# Log file name pattern, can include strftime() escapes.
+postgresql_log_filename: postgresql-%Y-%m-%d.log
+
+
+# Values in order of decreasing detail:
+#   debug5, debug4, debug3, debug2, debug1, log, notice, warning. error
+postgresql_client_min_messages: notice
+
+# Values in order of decreasing detail:
+#   debug5, debug4, debug3, debug2, debug1, info, notice, warning, error, log,
+#   fatal, panic
+postgresql_log_min_messages: warning
+
+# Values in order of decreasing detail:
+#   debug5, debug4, debug3, debug2, debug1, info, notice, warning, error, log,
+#   fatal, panic (effectively off)
+postgresql_log_min_error_statement: error
+
+# -1 is disabled, 0 logs all statements and their durations,
+# > 0 logs only statements running at least this number of milliseconds
+postgresql_log_min_duration_statement: -1
+
+# Special values:
+#    %a = application name
+#    %u = user name
+#    %d = database name
+#    %r = remote host and port
+#    %h = remote host
+#    %p = process ID
+#    %t = timestamp without milliseconds
+#    %m = timestamp with milliseconds
+#    %i = command tag
+#    %e = SQL state
+#    %c = session ID
+#    %l = session line number
+#    %s = sessioan start timestamp
+#    %v = virtual transaction ID
+#    %x = transaction ID (0 if none)
+#    %q = stop here in non-session
+#    processes
+#    %% = '%'
+postgresql_log_line_prefix: '%t %d '
+
+# none, ddl, mod, all
+postgresql_log_statement: none
+
+
+#
+# Client connection defaults
+#
+
+# Locale for system error message strings.
+postgresql_lc_messages: "{{ postgresql_locale }}"
+
+# Locale for monetary formatting.
+postgresql_lc_monetary: "{{ postgresql_locale }}"
+
+# Locale for number formatting.
+postgresql_lc_numeric: "{{ postgresql_locale }}"
+
+# Locale for time formatting.
+postgresql_lc_time: "{{ postgresql_locale }}"
+
+# Default configuration for text search.
+postgresql_default_text_search_config: pg_catalog.simple
