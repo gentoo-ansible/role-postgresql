@@ -27,6 +27,9 @@ postgresql_log_dir: "/var/log/postgresql"
 # Timezone for the database cluster.
 postgresql_timezone: "{{ timezone }}"
 
+# Whether to install czech fulltext support.
+postgresql_install_cspell: true
+
 
 #
 # Connections and authentication

@@ -1,0 +1,18 @@
+---
+- name: download czech dictionary and unpack to tsearch_data
+  shell: >
+    curl -L http://postgres.cz/data/czech.tar.gz \
+        | tar -xz --strip-components=1 --no-same-owner --no-same-permissions
+    chdir=/usr/share/{{ postgresql_name }}/tsearch_data
+    creates=/usr/share/{{ postgresql_name }}/tsearch_data/czech.dict
+  register: _download_czech_dict
+
+- name: configure czech dictionary
+  sudo: yes
+  sudo_user: postgres
+  command: "psql -X -c '{{ item }}'"
+  with_items:
+    - "CREATE TEXT SEARCH DICTIONARY cspell (template=ispell, dictfile = czech, afffile=czech, stopwords=czech);"
+    - "CREATE TEXT SEARCH CONFIGURATION cs (copy=english);"
+    - "ALTER TEXT SEARCH CONFIGURATION cs ALTER MAPPING FOR word, asciiword WITH cspell, simple;"
+  when: _download_czech_dict | changed

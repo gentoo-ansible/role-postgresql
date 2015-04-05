@@ -49,3 +49,7 @@
     enabled=yes
     state=started
   tags: services
+
+- name: install czech fulltext support
+  include: install_cspell.yml tags=foo
+  when: postgresql_install_cspell | bool
