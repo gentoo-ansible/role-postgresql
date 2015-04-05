@@ -3,12 +3,16 @@
 # Base configuration
 #
 
+# Slot of the dev-db/postgresql package to install.
 postgresql_slot: 9.4
 
+# Name of this instance.
 postgresql_name: "postgresql-{{ postgresql_slot }}"
 
+# Encoding of the template database, i.e. default encoding for new databases.
 postgresql_encoding: UTF-8
 
+# The default locale for the database cluster.
 postgresql_locale: en_US.UTF-8
 
 # Path of the data directory where database files are stored.
@@ -17,9 +21,10 @@ postgresql_data_dir: "/var/lib/postgresql/{{ postgresql_slot }}/data"
 # Path of the directory for config files.
 postgresql_conf_dir: "/etc/postgresql-{{ postgresql_slot }}"
 
-# Directory where the log files are written.
+# Path of the directory to store logs.
 postgresql_log_dir: "/var/log/postgresql"
 
+# Timezone for the database cluster.
 postgresql_timezone: "{{ timezone }}"
 
 
@@ -27,15 +32,22 @@ postgresql_timezone: "{{ timezone }}"
 # Connections and authentication
 #
 
+# List of IP addresses or hostnames to listen on. Use '*' to listen on all.
 postgresql_listen_addresses:
   - localhost
 
+# Port number to listen.
 postgresql_port: 5432
 
+# Maximum number of concurrent connections to the database server.
+# Note: Increasing max_connections costs ~400 bytes of shared memory per
+# connection slot, plus lock space (see max_locks_per_transaction).
 postgresql_max_connections: 100
 
-postgresql_unix_socket_group: ''
+# Owning group of the unix socket.
+postgresql_unix_socket_group: postgres
 
+# Access permissions of the unix socket (begin with 0 to use octal notation).
 postgresql_unix_socket_permissions: '0777'
 
 # Authenticated connections that will be inserted in pg_hba.conf.
@@ -94,10 +106,8 @@ postgresql_log_destination: stderr
 # Required to be on for csvlogs.
 postgresql_logging_collector: 'off'
 
-
 # Log file name pattern, can include strftime() escapes.
 postgresql_log_filename: postgresql-%Y-%m-%d.log
-
 
 # Values in order of decreasing detail:
 #   debug5, debug4, debug3, debug2, debug1, log, notice, warning. error
