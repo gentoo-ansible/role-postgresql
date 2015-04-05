@@ -1,8 +1,8 @@
 ---
-- name: install postgresql-server and psycopg
+- name: install postgresql and psycopg
   portage: package={{ item }}
   with_items:
-    - dev-db/postgresql-server
+    - dev-db/postgresql
     - dev-python/psycopg
   tags: packages
 
@@ -21,7 +21,7 @@
 
 - name: run package configuration phase
   shell: >
-    yes | emerge --config dev-db/postgresql-server:{{ postgresql_slot }}
+    yes | emerge --config dev-db/postgresql:{{ postgresql_slot }}
   when: is_data_dir_empty | success
   tags: config
 
