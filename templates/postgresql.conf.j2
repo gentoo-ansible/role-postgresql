@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
-# -----------------------------
-# PostgreSQL configuration file
-# -----------------------------
+# ---------------------------------
+# PostgreSQL 9.4 configuration file
+# ---------------------------------
 #
 # This file consists of lines of the form:
 #
@@ -28,7 +28,7 @@
 # Memory units:  kB = kilobytes        Time units:  ms  = milliseconds
 #                MB = megabytes                     s   = seconds
 #                GB = gigabytes                     min = minutes
-#                                                   h   = hours
+#                TB = terabytes                     h   = hours
 #                                                   d   = days
 
 
@@ -60,7 +60,7 @@
 
 # - Connection Settings -
 
-# Changes in this section requires restart.
+# Changes in this section requires restart!
 
 # Comma-separated list of IP addresses to listen on.
 # Defaults to 'localhost'; use '*' for all.
@@ -68,6 +68,7 @@ listen_addresses = '{{ postgresql_listen_addresses|join(",") }}'
 
 port = {{ postgresql_port }}
 
+# Maximum number of concurrent connections to the database server.
 # Note: Increasing max_connections costs ~400 bytes of shared memory per
 # connection slot, plus lock space (see max_locks_per_transaction).
 max_connections = {{ postgresql_max_connections }}
@@ -77,15 +78,16 @@ max_connections = {{ postgresql_max_connections }}
 # Comma-separated list of directories.
 #unix_socket_directories = '/run/postgresql'
 
+# Owning group of the unix socket.
 unix_socket_group = '{{ postgresql_unix_socket_group }}'
 
-# Begin with 0 to use octal notation.
+# Access permissions of the unix socket (begin with 0 to use octal notation).
 unix_socket_permissions = {{ postgresql_unix_socket_permissions }}
 
 
 # - Security and Authentication -
 
-# Changes in this section requires restart.
+# Changes in this section requires restart!
 
 # 1s-600s
 #authentication_timeout = 1min
@@ -93,7 +95,10 @@ unix_socket_permissions = {{ postgresql_unix_socket_permissions }}
 #ssl = off
 
 # Allowed SSL ciphers.
-#ssl_ciphers = 'DEFAULT:!LOW:!EXP:!MD5:@STRENGTH'
+#ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL'
+
+#ssl_prefer_server_ciphers = on
+#ssl_ecdh_curve = 'prime256v1'
 
 # Amount of data between renegotiations.
 #ssl_renegotiation_limit = 512MB
@@ -106,9 +111,8 @@ unix_socket_permissions = {{ postgresql_unix_socket_permissions }}
 #password_encryption = on
 #db_user_namespace = off
 
-# Kerberos and GSSAPI
+# GSSAPI using Kerberos
 #krb_server_keyfile = ''
-#krb_srvname = 'postgres'
 #krb_caseins_users = off
 
 
@@ -131,27 +135,52 @@ unix_socket_permissions = {{ postgresql_unix_socket_permissions }}
 
 # - Memory -
 
-# min 128kB
+# Amount of memory the database server uses for shared memory buffers.
+# min 128kB; change requires restart!
 shared_buffers = {{ postgresql_shared_buffers }}
 
+# Enables/disables the use of huge memory pages. Change requires restart!
+# Options: on, off, or try.
+#huge_pages = try
+
+# Maximum number of temporary buffers used by each database session.
 # min 800kB
 temp_buffers = {{ postgresql_temp_buffers }}
 
-# Zero disables the feature.
+# Maximum number of transactions that can be in the "prepared" state
+# simultaneously. Zero disables the feature. Change requires restart!
+#
 # Note: Increasing max_prepared_transactions costs ~600 bytes of shared memory
 # per transaction slot, plus lock space (see max_locks_per_transaction).
 # It is not advisable to set max_prepared_transactions nonzero unless you
 # actively intend to use prepared transactions.
 #max_prepared_transactions = 0
 
+# Amount of memory to be used by internal sort operations and hash tables
+# before writing to temporary disk files.
 # min 64kB
 work_mem = {{ postgresql_work_mem }}
 
+# Maximum amount of memory to be used by maintenance operations, such as
+# VACUUM, CREATE INDEX, and ALTER TABLE ADD FOREIGN KEY.
 # min 1MB
 maintenance_work_mem = {{ postgresql_maintenance_work_mem }}
 
+# Maximum amount of memory to be used by each autovacuum worker process.
+# min 1MB, or -1 to use maintenance_work_mem
+autovacuum_work_mem = -1
+
+# Maximum safe depth of the server's execution stack.
 # min 100kB
 max_stack_depth = {{ postgresql_max_stack_depth }}
+
+# Dynamic shared memory implementation that the server should use:
+#   posix    - for POSIX shared memory allocated using shm_open
+#   sysv     - for System V shared memory allocated via shmget
+#   windows  - for Windows shared memory
+#   mmap     - simulate using memory-mapped files stored in the data dir
+#   none     - disable dynamic shared memory
+dynamic_shared_memory_type = posix
 
 
 # - Disk -
@@ -162,10 +191,10 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 
 # - Kernel Resource Usage -
 
-# min 25; change requires restart
+# min 25; change requires restart!
 #max_files_per_process = 1000
 
-# change requires restart
+# Change requires restart!
 #shared_preload_libraries = ''
 
 
@@ -204,6 +233,8 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 # 1-1000; 0 disables prefetching
 #effective_io_concurrency = 1
 
+#max_worker_processes = 8
+
 
 #------------------------------------------------------------------------------
 # WRITE AHEAD LOG
@@ -211,7 +242,7 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 
 # - Settings -
 
-# Options: minimal, archive, or hot_standby
+# Options: minimal, archive, hot_standby, or logical
 # Change requires restart!
 #wal_level = minimal
 
@@ -231,6 +262,9 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 
 # Recover from partial page writes.
 #full_page_writes = on
+
+# Also do full page writes of non-critical updates. Change requires restart!
+#wal_log_hints = off
 
 # min 32kB, -1 sets based on shared_buffers
 # Change requires restart!
@@ -263,8 +297,7 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 
 # - Archiving -
 
-# Allows archiving to be done.
-# Change requires restart!
+# Allows archiving to be done. Change requires restart!
 #archive_mode = off
 
 # Command to use to archive a logfile segment.
@@ -286,8 +319,7 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 
 # Set these on the master and on any standby that will send replication data.
 
-# Max number of walsender processes.
-# Change requires restart!
+# Maximum number of walsender processes. Change requires restart!
 #max_wal_senders = 0
 
 # in logfile segments, 16MB each; 0 disables
@@ -295,6 +327,9 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 
 # in milliseconds; 0 disables
 #wal_sender_timeout = 60s
+
+# Maximum number of replication slots. Change requires restart!
+#max_replication_slots = 0
 
 
 # - Master Server -
@@ -313,8 +348,7 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 
 # These settings are ignored on a master server.
 
-# Value "on" allows queries during recovery.
-# Change requires restart.
+# Value "on" allows queries during recovery. Change requires restart!
 #hot_standby = off
 
 # Max delay before canceling queries when reading WAL from archive;
@@ -365,7 +399,7 @@ max_stack_depth = {{ postgresql_max_stack_depth }}
 #cpu_index_tuple_cost = 0.005
 #cpu_operator_cost = 0.0025
 
-#effective_cache_size = 128MB
+#effective_cache_size = 4GB
 
 
 # - Genetic Query Optimizer -
@@ -541,7 +575,7 @@ log_timezone = '{{ postgresql_timezone }}'
 
 #track_functions = none
 
-# (change requires restart)
+# Change requires restart!
 #track_activity_query_size = 1024
 
 #update_process_title = on
@@ -590,7 +624,7 @@ log_timezone = '{{ postgresql_timezone }}'
 # Maximum XID age before forced vacuum. Change requires restart!
 #autovacuum_freeze_max_age = 200000000
 
-# Maximum Multixact age before forced vacuum. Change requires restart!
+# Maximum multixact age before forced vacuum. Change requires restart!
 #autovacuum_multixact_freeze_max_age = 400000000
 
 # Default vacuum cost delay for autovacuum, in milliseconds;
@@ -692,6 +726,7 @@ default_text_search_config = '{{ postgresql_default_text_search_config }}'
 #dynamic_library_path = '$libdir'
 
 #local_preload_libraries = ''
+#session_preload_libraries = ''
 
 
 #------------------------------------------------------------------------------

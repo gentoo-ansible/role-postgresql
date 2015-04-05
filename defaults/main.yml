@@ -59,20 +59,27 @@ postgresql_authentication: []
 # Resource usage
 #
 
+# Amount of memory the database server uses for shared memory buffers.
 # min 128kB
-postgresql_shared_buffers: 256MB
+postgresql_shared_buffers: 128MB
 
+# Maximum number of temporary buffers used by each database session.
 # min 800kB
 postgresql_temp_buffers: 8MB
 
+# Amount of memory to be used by internal sort operations and hash tables
+# before writing to temporary disk files.
 # min 64kB
-postgresql_work_mem: 16MB
+postgresql_work_mem: 4MB
 
+# Maximum amount of memory to be used by maintenance operations, such as
+# VACUUM, CREATE INDEX, and ALTER TABLE ADD FOREIGN KEY.
 # min 1MB
-postgresql_maintenance_work_mem: 32MB
+postgresql_maintenance_work_mem: 64MB
 
+# Maximum safe depth of the server's execution stack.
 # min 100kB
-postgresql_max_stack_depth: 4MB
+postgresql_max_stack_depth: 2MB
 
 
 #
