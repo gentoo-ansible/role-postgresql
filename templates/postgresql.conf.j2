@@ -1,3 +1,6 @@
+{% macro bool(value) -%}
+{{ 'on' if value | bool else 'off' }}
+{%- endmacro %}
 # {{ ansible_managed }}
 # ---------------------------------
 # PostgreSQL 9.4 configuration file
@@ -455,7 +458,7 @@ log_destination = '{{ postgresql_log_destination }}'
 
 # Enable capturing of stderr and csvlog into log files. Required to be on for
 # csvlogs. Change requires restart!
-logging_collector = {{ postgresql_logging_collector }}
+logging_collector = {{ bool(postgresql_logging_collector) }}
 
 # These are only used if logging_collector is on:
 

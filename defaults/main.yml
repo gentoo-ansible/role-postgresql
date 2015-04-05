@@ -107,7 +107,7 @@ postgresql_log_destination: stderr
 
 # Enable capturing of stderr and csvlog into log files.
 # Required to be on for csvlogs.
-postgresql_logging_collector: 'off'
+postgresql_logging_collector: "{{ postgresql_log_destination != 'syslog' }}"
 
 # Log file name pattern, can include strftime() escapes.
 postgresql_log_filename: postgresql-%Y-%m-%d.log
