@@ -41,7 +41,7 @@ samerole{% elif auth.database is string %}
 {{ auth.database }}{% elif auth.database is sequence %}
 {{ auth.database|join(',') }}{% endif %}	{{ auth.user }}	{{ auth.address|default('	') }}	{{ auth.method }}	{% if 'options' in auth %}
 {% for k,v in auth.options.items() %}
-{{ k }}={{ v }} {% endfor %}{% endif %}
+{{ k }}="{{ v }}" {% endfor %}{% endif %}
 
 {% endfor %}
 
