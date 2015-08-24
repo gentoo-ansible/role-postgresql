@@ -1,3 +1,4 @@
+{# Synchronize with changes in https://github.com/postgres/postgres/blob/master/src/backend/utils/misc/postgresql.conf.sample #}
 {% macro bool(value) -%}
 {{ 'on' if value | bool else 'off' }}
 {%- endmacro %}
