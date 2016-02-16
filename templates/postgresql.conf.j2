@@ -4,7 +4,7 @@
 {%- endmacro %}
 # {{ ansible_managed }}
 # ---------------------------------
-# PostgreSQL 9.4 configuration file
+# PostgreSQL 9.5 configuration file
 # ---------------------------------
 #
 # This file consists of lines of the form:
@@ -104,9 +104,6 @@ unix_socket_permissions = {{ postgresql_unix_socket_permissions }}
 #ssl_prefer_server_ciphers = on
 #ssl_ecdh_curve = 'prime256v1'
 
-# Amount of data between renegotiations.
-#ssl_renegotiation_limit = 512MB
-
 #ssl_cert_file = 'server.crt'
 #ssl_key_file = 'server.key'
 #ssl_ca_file = ''
@@ -114,6 +111,7 @@ unix_socket_permissions = {{ postgresql_unix_socket_permissions }}
 
 #password_encryption = on
 #db_user_namespace = off
+#row_security = on
 
 # GSSAPI using Kerberos
 #krb_server_keyfile = ''
@@ -267,6 +265,9 @@ dynamic_shared_memory_type = posix
 # Recover from partial page writes.
 #full_page_writes = on
 
+# Enable compression of full-page writes.
+#wal_compression = off
+
 # Also do full page writes of non-critical updates. Change requires restart!
 #wal_log_hints = off
 
@@ -286,11 +287,11 @@ dynamic_shared_memory_type = posix
 
 # - Checkpoints -
 
-# in logfile segments, min 1, 16MB each
-#checkpoint_segments = 3
-
 # range 30s-1h
 #checkpoint_timeout = 5min
+
+#max_wal_size = 1GB
+#min_wal_size = 80MB
 
 # Checkpoint target duration; 0.0 - 1.0.
 #checkpoint_completion_target = 0.5
@@ -301,7 +302,7 @@ dynamic_shared_memory_type = posix
 
 # - Archiving -
 
-# Allows archiving to be done. Change requires restart!
+# Enables archiving; off, on, or always. Change requires restart!
 #archive_mode = off
 
 # Command to use to archive a logfile segment.
@@ -334,6 +335,9 @@ dynamic_shared_memory_type = posix
 
 # Maximum number of replication slots. Change requires restart!
 #max_replication_slots = 0
+
+# Collect timestamp of transaction commit. Change requires restart!
+#track_commit_timestamp = off
 
 
 # - Master Server -
@@ -372,6 +376,9 @@ dynamic_shared_memory_type = posix
 # Time that receiver waits for communication from master in milliseconds;
 # 0 disables.
 #wal_receiver_timeout = 60s
+
+# Time to wait before retrying to retrieve WAL after a failed attempt.
+#wal_retrieve_retry_interval = 5s
 
 
 #------------------------------------------------------------------------------
@@ -556,11 +563,21 @@ log_line_prefix = '{{ postgresql_log_line_prefix }}'
 # none, ddl, mod, all
 log_statement = '{{ postgresql_log_statement }}'
 
+#log_replication_commands = off
+
 # Log temporary files equal or larger than the specified size in kilobytes;
 # -1 disables, 0 logs all temp files.
 #log_temp_files = -1
 
 log_timezone = '{{ postgresql_timezone }}'
+
+
+# - Process Title -
+
+# Added to process titles if nonempty. Change requires restart!
+#cluster_name = ''
+
+#update_process_title = on
 
 
 #------------------------------------------------------------------------------
@@ -581,8 +598,6 @@ log_timezone = '{{ postgresql_timezone }}'
 
 # Change requires restart!
 #track_activity_query_size = 1024
-
-#update_process_title = on
 
 #stats_temp_directory = 'pg_stat_tmp'
 
@@ -646,7 +661,7 @@ log_timezone = '{{ postgresql_timezone }}'
 # - Statement Behavior -
 
 # Schema names.
-#search_path = '"$user",public'
+#search_path = '"$user", public'
 
 # A tablespace name, '' uses the default.
 #default_tablespace = ''
@@ -684,6 +699,10 @@ log_timezone = '{{ postgresql_timezone }}'
 #xmlbinary = 'base64'
 
 #xmloption = 'content'
+
+#gin_fuzzy_search_limit = 0
+
+#gin_pending_list_limit = 4MB
 
 
 # - Locale and Formatting -
@@ -765,6 +784,8 @@ default_text_search_config = '{{ postgresql_default_text_search_config }}'
 #escape_string_warning = on
 
 #lo_compat_privileges = off
+
+#operator_precedence_warning = off
 
 #quote_all_identifiers = off
 

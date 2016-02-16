@@ -4,7 +4,7 @@
 #
 
 # Slot of the dev-db/postgresql package to install.
-postgresql_slot: 9.4
+postgresql_slot: 9.5
 
 # Name of this instance.
 postgresql_name: "postgresql-{{ postgresql_slot }}"
